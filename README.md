@@ -6,4 +6,4 @@ The .blend requires Animation Nodes to see the staghorn coral node tree.
 
 There are 3 OSL shaders with different types of noise functions (with parameters), displacement shader and a diffuse shader to play around with. 
 
-![Image of Corals](https://github.com/samuelllsvensson/Procedural_Corals/images/finalRender.png)
+![Image of Corals](images/finalRender.png)
