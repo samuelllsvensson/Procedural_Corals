@@ -1,0 +1,10 @@
+#include "stdosl.h"
+
+shader node_diffuse_bsdf(
+    color Color = color(0.50, 0.085, 0.0),
+    float Roughness = 0.0,
+    normal Normal = N,
+    output closure color BSDF = 0)
+{
+    BSDF = Color * oren_nayar(Normal, Roughness);
+}

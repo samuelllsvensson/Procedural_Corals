@@ -1,0 +1,18 @@
+#include "stdosl.h"
+
+shader node_displacement(
+    float Height = 0.3,
+    float Midlevel = 0.5,
+    float Scale = 1.0,
+    normal Normal = N,
+    output vector Displacement = vector(0.0, 0.0, 0.0))
+{
+    Displacement = Normal;
+    Displacement = transform("object", Displacement);
+    // Normalize 
+    Displacement = normalize(Displacement) 
+                * (Height - Midlevel) * Scale;
+    // Transform from object to world space
+    Displacement = transform("object", "world", 
+                                        Displacement);
+}

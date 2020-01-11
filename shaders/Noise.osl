@@ -1,0 +1,51 @@
+
+// "safe" Perlin (
+float safe_snoise(vector3 p)
+{
+  float f = noise("snoise", p);
+  if (isinf(f))
+    return 0.0;
+  return f;
+}
+// Random offset generation
+vector3 random_vector3_offset(float seed)
+{
+  return vector3(100.0 + noise("hash", seed, 0.0) * 100.0,
+                 100.0 + noise("hash", seed, 1.0) * 100.0,
+                 100.0 + noise("hash", seed, 2.0) * 100.0);
+}
+// Generate noise texture
+float noise_texture(vector3 co, float detail, 
+                    float distortion)
+{
+  vector3 p = co;
+  if (distortion != 0.0) {
+    p += vector3(safe_snoise(p + 
+                    random_vector3_offset(0.0)) * distortion,
+                 safe_snoise(p + 
+                    random_vector3_offset(1.0)) * distortion,
+                 safe_snoise(p +
+                    random_vector3_offset(2.0)) * distortion);
+  }
+  float value = fractal_noise(p, detail);
+  Color = color(value,
+                fractal_noise(p +
+                    random_vector3_offset(3.0), detail),
+                fractal_noise(p +
+                    random_vector3_offset(4.0), detail));
+  return value;
+}
+
+shader NoiseTexture(
+    vector3 Vector = vector3(0, 0, 0),
+    float Scale = 5.0,
+    float Detail = 16.0,
+    float Distortion = 5.0,
+    output float Fac = 0.0)
+{
+    vector3 p = Vector;
+    
+    p *= Scale;
+    
+    Fac = noise_texture(p, Detail, Distortion);
+}

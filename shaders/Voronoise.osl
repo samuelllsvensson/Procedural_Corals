@@ -1,0 +1,108 @@
+#include "stdosl.h"
+#include "vector2.h"
+#include "vector4.h"
+#include "node_hash.h"
+
+#define vector3 point
+
+/* **** Distance Functions **** */
+
+float distance(float a, float b)
+{
+  return abs(a - b);
+}
+
+float distance(vector2 a, vector2 b)
+{
+  return length(a - b);
+}
+
+float distance(vector4 a, vector4 b)
+{
+  return length(a - b);
+}
+
+/* **** Safe Division **** */
+
+vector2 safe_divide(vector2 a, float b)
+{
+  return vector2((b != 0.0) ? a.x / b : 0.0, (b != 0.0) ? a.y / b : 0.0);
+}
+
+vector4 safe_divide(vector4 a, float b)
+{
+  return vector4((b != 0.0) ? a.x / b : 0.0,
+                 (b != 0.0) ? a.y / b : 0.0,
+                 (b != 0.0) ? a.z / b : 0.0,
+                 (b != 0.0) ? a.w / b : 0.0);
+}
+
+float voronoi_distance(vector3 a, vector3 b)
+{
+    // Euclidean distance
+    return distance(a, b);
+}
+
+// Voronoi Noise F1 3D
+void voronoi_f1_3d(
+    vector3 coord,
+    float randomness,
+    output float outDistance,
+    output color outColor,
+    output vector3 outPosition)
+{
+    vector3 cellPosition = floor(coord);
+    vector3 localPosition = coord - cellPosition;
+
+    float minDistance = 8.0;
+    vector3 targetOffset, targetPosition;
+    for (int k = -1; k <= 1; k++) {
+      for (int j = -1; j <= 1; j++) {
+        for (int i = -1; i <= 1; i++) {
+          vector3 cellOffset = vector3(i, j, k);
+          vector3 pointPosition = cellOffset +
+          hash_vector3_to_vector3(cellPosition + cellOffset) 
+                                            * randomness;
+          float distanceToPoint = voronoi_distance(pointPosition,localPosition);
+          if (distanceToPoint < minDistance) {
+            targetOffset = cellOffset;
+            minDistance = distanceToPoint;
+            targetPosition = pointPosition;
+          }
+        }
+      }
+    }
+    outDistance = minDistance;
+    // Only output color used
+    outColor = hash_vector3_to_color(cellPosition + targetOffset);
+    outPosition = targetPosition + cellPosition;
+}
+
+shader Voronoise(
+    string feature = "f1",
+    vector3 Vector = P,
+    float Scale = 5.0,
+    float Smoothness = 5.0,
+    float Exponent = 1.0,
+    float Randomness = 1.0,
+    output float Distance = 0.0,
+    output color Color = 0.0,
+    output vector3 Position = P)
+{
+    float randomness = clamp(Randomness, 0.0, 1.0);
+    float smoothness = clamp(Smoothness / 2.0, 0.0, 0.5);
+
+    vector3 coord = Vector;
+
+    coord *= Scale;
+
+
+    if (feature == "f1") {
+      voronoi_f1_3d(coord, randomness, Distance, Color, Position);
+    }
+    else {
+      error("Unknown feature!");
+    }
+    Position = (Scale != 0.0) ? Position / Scale : vector3(0.0);
+  
+}
